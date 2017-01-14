@@ -60,7 +60,7 @@
           "lib/net45/_._": {}
         }
       },
-      "SharpLock/1.0.5": {
+      "SharpLock/1.0.6": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.6",
         "dependencies": {
@@ -1491,7 +1491,7 @@
           "lib/netstandard1.3/System.Xml.XDocument.dll": {}
         }
       },
-      "SharpLock/1.0.5": {
+      "SharpLock/1.0.6": {
         "type": "project",
         "framework": ".NETStandard,Version=v1.5",
         "dependencies": {
@@ -5245,14 +5245,14 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "SharpLock/1.0.5": {
+    "SharpLock/1.0.6": {
       "type": "project",
       "path": "../SharpLock/project.json"
     }
   },
   "projectFileDependencyGroups": {
     "": [
-      "SharpLock >= 1.0.5"
+      "SharpLock >= 1.0.6"
     ],
     ".NETFramework,Version=v4.6": [
       "MongoDB.Driver >= 2.3.0",

@@ -12,10 +12,8 @@ namespace SharpLock
         private readonly ILogger _logger;
         private readonly CancellationToken _token;
         private readonly Expression<Func<TBaseObject, TLockableObject>> _fieldSelector;
-
         private Type _lockedObjectType;
         private TId _lockedObjectId;
-
         public bool LockAcquired => LockedObject != null;
         public readonly TimeSpan LockTime;
         public TLockableObject LockedObject;
@@ -66,7 +64,7 @@ namespace SharpLock
             _logger.Debug("Lock attempt complete on {Type} with Id: {Id} and LockTime: {LockTime}. Lock Acquired? {LockState}", _lockedObjectType, _lockedObjectId, LockedObject?.UpdateLock, LockAcquired);
 
             if (!LockAcquired && throwOnFailure)
-                throw new LockRecursionException();
+                throw new AcquireDistributedLockException();
 
             return LockAcquired;
         }
@@ -88,7 +86,7 @@ namespace SharpLock
             _logger.Debug("Lock refresh complete on {Type} with {Id}. Lock Acquired? {LockState}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
             if (!LockAcquired && throwOnFailure)
-                throw new DistributedLockException("Failed to refresh lock.");
+                throw new RefreshDistributedLockException("Failed to refresh lock.");
             return LockAcquired;
         }
 
@@ -115,7 +113,7 @@ namespace SharpLock
             _logger.Debug("Lock release complete on {Type} with {Id}. Lock Acquired? {LockState}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
             
             if (!LockAcquired && throwOnFailure)
-                throw new DistributedLockException("Failed to release lock.");
+                throw new ReleaseDistributedLockException("Failed to release lock.");
 
             return LockAcquired;
         }
