@@ -1,0 +1,22 @@
+{
+  "version": "1.0.5-*",
+  "buildOptions": {
+    "debugType": "portable",
+    "platform": "anycpu"
+  },
+  "dependencies": {},
+  "frameworks": {
+    "net46": {
+      "dependencies": {
+        "serilog": "*",
+        "System.Runtime": "*"
+      }
+    },
+    "netstandard1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.1",
+        "serilog": "*"
+      }
+    }
+  }
+}

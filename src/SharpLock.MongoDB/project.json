@@ -1,0 +1,23 @@
+{
+  "version": "1.0.6-*",
+  "buildOptions": {
+    "debugType": "portable",
+    "platform": "anycpu"
+  },
+  "dependencies": { "SharpLock": "1.0.5" },
+  "frameworks": {
+    "net46": {
+      "dependencies": {
+        "MongoDB.Driver" : "2.3.0",
+        "serilog": "*"
+      }
+    },
+    "netstandard1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.1",
+        "MongoDB.Driver": "2.3.0",
+        "serilog": "*"
+      }
+    }
+  }
+}
