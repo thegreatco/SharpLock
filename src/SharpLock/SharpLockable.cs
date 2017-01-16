@@ -2,12 +2,8 @@ using System;
 
 namespace SharpLock
 {
-    public class SharpLockable<T>
+    public class SharpLockable<T> : SharpLockableBase<T>
     {
-        /// <summary>
-        /// The Id of the object being locked.
-        /// </summary>
-        public T Id;
         /// <summary>
         /// The timestamp of the last time the lock was refreshed.
         /// </summary>
