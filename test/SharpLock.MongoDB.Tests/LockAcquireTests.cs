@@ -30,7 +30,7 @@ namespace SharpLock.MongoDB.Tests
             var dataStore = new MongoDataStore<LockBase>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
             var lck = new DistributedLock<LockBase, ObjectId>(dataStore);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase), "Failed to acquire lock.");
+            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase), "Failed to acquire lock.");
 
             Assert.True(lockBase.Id == lck.LockedObject.Id, "Locked Object is not the expected object.");
 
@@ -62,7 +62,7 @@ namespace SharpLock.MongoDB.Tests
             var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
             var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.SingularInnerLock);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase.SingularInnerLock), "Failed to acquire lock.");
+            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.SingularInnerLock), "Failed to acquire lock.");
 
             Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
@@ -92,7 +92,7 @@ namespace SharpLock.MongoDB.Tests
             var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
             var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.IEnumerableLockables);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase.IEnumerableLockables.First()), "Failed to acquire lock.");
+            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.IEnumerableLockables.First()), "Failed to acquire lock.");
 
             Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
@@ -122,7 +122,7 @@ namespace SharpLock.MongoDB.Tests
             var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
             var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.ListOfLockables);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase.ListOfLockables.First()), "Failed to acquire lock.");
+            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.ListOfLockables.First()), "Failed to acquire lock.");
 
             Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
@@ -152,7 +152,7 @@ namespace SharpLock.MongoDB.Tests
             var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
             var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.ArrayOfLockables);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase.ArrayOfLockables.First()), "Failed to acquire lock.");
+            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.ArrayOfLockables.First()), "Failed to acquire lock.");
 
             Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             

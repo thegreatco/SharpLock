@@ -26,6 +26,14 @@ namespace SharpLock.MongoDB
             _lockTime = lockTime;
         }
 
+        public MongoDataStore(IMongoCollection<TBaseObject> col, ILogger logger, TimeSpan lockTime)
+        {
+            _logger = logger;
+            _col = col;
+            _lockTime = lockTime;
+            _token = new CancellationToken();
+        }
+
         public ILogger GetLogger() => _logger;
         public CancellationToken GetToken() => _token;
 

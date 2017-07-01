@@ -34,7 +34,7 @@ namespace SharpLock.MongoDB.Tests
 
             var locks = Enumerable.Range(0, 100).Select(x => new DistributedLock<LockBase, ObjectId>(dataStore)).ToList();
             Log.Logger.Information(locks.Count().ToString());
-            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase, TimeSpan.FromSeconds(1), false)));
+            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase, lockBase, TimeSpan.FromSeconds(1), false)));
             
             Assert.False(lockStates.Count(x => x == true) < 1, "Failed to acquire lock.");
             Assert.False(lockStates.Count(x => x == true) > 1, "Acquired multiple locks.");
@@ -74,7 +74,7 @@ namespace SharpLock.MongoDB.Tests
 
             var locks = Enumerable.Range(0, 100).Select(x => new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, y => y.SingularInnerLock)).ToList();
             Log.Logger.Information(locks.Count().ToString());
-            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase.SingularInnerLock, TimeSpan.FromSeconds(1), false)));
+            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase, lockBase.SingularInnerLock, TimeSpan.FromSeconds(1), false)));
 
             Assert.False(lockStates.Count(x => x == true) < 1, "Failed to acquire lock.");
             Assert.False(lockStates.Count(x => x == true) > 1, "Acquired multiple locks.");
@@ -114,7 +114,7 @@ namespace SharpLock.MongoDB.Tests
 
             var locks = Enumerable.Range(0, 100).Select(x => new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, y => y.IEnumerableLockables)).ToList();
             Log.Logger.Information(locks.Count().ToString());
-            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase.IEnumerableLockables.First(), TimeSpan.FromSeconds(1), false)));
+            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase, lockBase.IEnumerableLockables.First(), TimeSpan.FromSeconds(1), false)));
 
             Assert.False(lockStates.Count(x => x == true) < 1, "Failed to acquire lock.");
             Assert.False(lockStates.Count(x => x == true) > 1, "Acquired multiple locks.");
@@ -154,7 +154,7 @@ namespace SharpLock.MongoDB.Tests
 
             var locks = Enumerable.Range(0, 100).Select(x => new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, y => y.ListOfLockables)).ToList();
             Log.Logger.Information(locks.Count().ToString());
-            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase.ListOfLockables[0], TimeSpan.FromSeconds(1), false)));
+            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase, lockBase.ListOfLockables[0], TimeSpan.FromSeconds(1), false)));
 
             Assert.False(lockStates.Count(x => x == true) < 1, "Failed to acquire lock.");
             Assert.False(lockStates.Count(x => x == true) > 1, "Acquired multiple locks.");
@@ -194,7 +194,7 @@ namespace SharpLock.MongoDB.Tests
 
             var locks = Enumerable.Range(0, 100).Select(x => new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, y => y.ArrayOfLockables)).ToList();
             Log.Logger.Information(locks.Count().ToString());
-            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase.ArrayOfLockables[1], TimeSpan.FromSeconds(1), false)));
+            var lockStates = await Task.WhenAll(locks.Select(x => x.AcquireLockAsync(lockBase, lockBase.ArrayOfLockables[1], TimeSpan.FromSeconds(1), false)));
 
             Assert.False(lockStates.Count(x => x == true) < 1, "Failed to acquire lock.");
             Assert.False(lockStates.Count(x => x == true) > 1, "Acquired multiple locks.");
