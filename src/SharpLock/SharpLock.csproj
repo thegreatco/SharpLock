@@ -6,8 +6,8 @@
     <DebugType>portable</DebugType>
     <AssemblyName>SharpLock</AssemblyName>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Description />
-    <Version>1.0.13</Version>
+    <Description>An extensible package for performing locking on an object across multiple processes synchronized using a persistent medium.</Description>
+    <Version>1.0.14</Version>
     <PackageProjectUrl>https://github.com/thegreatco/SharpLock</PackageProjectUrl>
     <RepositoryUrl>https://github.com/thegreatco/SharpLock</RepositoryUrl>
     <Authors>TheGreatCO</Authors>

@@ -6,12 +6,13 @@
     <DebugType>portable</DebugType>
     <AssemblyName>SharpLock.MongoDB</AssemblyName>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Description />
-    <Version>1.0.13</Version>
+    <Description>An extension for SharpLock enabling locking of objects in a MongoDB Database.</Description>
+    <Version>1.0.14</Version>
     <PackageProjectUrl>https://github.com/thegreatco/SharpLock</PackageProjectUrl>
     <RepositoryUrl>https://github.com/thegreatco/SharpLock</RepositoryUrl>
     <Authors>TheGreatCO</Authors>
     <Company>TheGreatCO</Company>
+    <Product>SharpLock.MongoDB</Product>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="serilog" Version="2.3.0" />

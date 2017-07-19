@@ -19,4 +19,9 @@ namespace SharpLock
         Task<TBaseObject> ReleaseLockAsync(TId baseObjId, TLockableObject obj, Expression<Func<TBaseObject, TLockableObject>> fieldSelector, CancellationToken token);
         Task<TBaseObject> ReleaseLockAsync(TId baseObjId, TLockableObject obj, Expression<Func<TBaseObject, IEnumerable<TLockableObject>>> fieldSelector, CancellationToken token);
     }
+
+    public interface IDataStore<TLockableObject, TId> : IDataStore<TLockableObject, TLockableObject, TId> where TLockableObject : SharpLockable<TId>
+    {
+        
+    }
 }
