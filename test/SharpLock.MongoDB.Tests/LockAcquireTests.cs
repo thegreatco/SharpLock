@@ -1,167 +1,162 @@
-using Xunit;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Serilog;
-using Serilog.Events;
 using MongoDB.Driver;
 using MongoDB.Bson;
 
 namespace SharpLock.MongoDB.Tests
 {
+    [TestClass]
     public class LockAcquireTests
     {
-        [Fact]
+        private ILogger _logger;
+        private IMongoCollection<LockBase> _col;
+
+        [TestInitialize]
+        public async Task Setup()
+        {
+            var logConfig = new LoggerConfiguration()
+                .WriteTo.LiterateConsole()
+                .MinimumLevel.Verbose();
+
+            Log.Logger = logConfig.CreateLogger();
+            _logger = new LoggingShim(Log.Logger);
+
+            var client = new MongoClient();
+            var db = client.GetDatabase("Test");
+            _col = db.GetCollection<LockBase>($"lockables.{GetType()}");
+            await _col.DeleteManyAsync(Builders<LockBase>.Filter.Empty);
+        }
+
+        [TestMethod]
         public async Task AcquireOneBaseClassAsync()
         {
-            var logConfig = new LoggerConfiguration()
-                .WriteTo.LiterateConsole(LogEventLevel.Error)
-				.MinimumLevel.Verbose();
-				
-            Log.Logger = logConfig.CreateLogger();
-            var cts = new CancellationTokenSource();
-            var client = new MongoClient();
-            var db = client.GetDatabase("Test");
-            var col = db.GetCollection<LockBase>("lockables");
-            await col.DeleteManyAsync(Builders<LockBase>.Filter.Empty);
             var lockBase = new LockBase();
-            await col.InsertOneAsync(lockBase);
-            var dataStore = new MongoDataStore<LockBase>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
+            await _col.InsertOneAsync(lockBase);
+            var dataStore = new MongoDataStore<LockBase>(_col, _logger, TimeSpan.FromSeconds(30));
             var lck = new DistributedLock<LockBase, ObjectId>(dataStore);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase), "Failed to acquire lock.");
+            Assert.IsTrue(await lck.AcquireLockAsync(lockBase), "Failed to acquire lock.");
 
-            Assert.True(lockBase.Id == lck.LockedObject.Id, "Locked Object is not the expected object.");
+            Assert.IsTrue(lockBase.Id == lck.LockedObject.Id, "Locked Object is not the expected object.");
 
-            Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
+            Assert.IsTrue(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
-            Assert.True(await lck.RefreshLockAsync(), "Failed to refresh lock.");
+            Assert.IsTrue(await lck.RefreshLockAsync(), "Failed to refresh lock.");
             
-            Assert.True(await lck.ReleaseLockAsync(), "Failed to release lock.");
+            Assert.IsTrue(await lck.ReleaseLockAsync(), "Failed to release lock.");
             
             lck.Dispose();
-            Assert.True(lck.Disposed, "Failed to mark object as disposed");
+            Assert.IsTrue(lck.Disposed, "Failed to mark object as disposed");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AcquireOneSingularSubClassAsync()
         {
-            var logConfig = new LoggerConfiguration()
-                .WriteTo.LiterateConsole(LogEventLevel.Error)
-                .MinimumLevel.Verbose();
-				
-            Log.Logger = logConfig.CreateLogger();
-            var cts = new CancellationTokenSource();
-            var client = new MongoClient();
-            var db = client.GetDatabase("Test");
-            var col = db.GetCollection<LockBase>("lockables");
-            await col.DeleteManyAsync(Builders<LockBase>.Filter.Empty);
             var lockBase = new LockBase();
-            await col.InsertOneAsync(lockBase);
-            var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
+            await _col.InsertOneAsync(lockBase);
+            var dataStore = new MongoDataStore<LockBase, InnerLock>(_col, _logger, TimeSpan.FromSeconds(30));
             var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.SingularInnerLock);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.SingularInnerLock), "Failed to acquire lock.");
+            Assert.IsTrue(await lck.AcquireLockAsync(lockBase, lockBase.SingularInnerLock), "Failed to acquire lock.");
 
-            Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
+            Assert.IsTrue(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
-            Assert.True(await lck.RefreshLockAsync(), "Failed to refresh lock.");
+            Assert.IsTrue(await lck.RefreshLockAsync(), "Failed to refresh lock.");
             
-            Assert.True(await lck.ReleaseLockAsync(), "Failed to release lock.");
+            Assert.IsTrue(await lck.ReleaseLockAsync(), "Failed to release lock.");
             
             lck.Dispose();
-            Assert.True(lck.Disposed, "Failed to mark object as disposed");
+            Assert.IsTrue(lck.Disposed, "Failed to mark object as disposed");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AcquireOneEnumerableSubClassAsync()
         {
-            var logConfig = new LoggerConfiguration()
-                .WriteTo.LiterateConsole(LogEventLevel.Error)
-                .MinimumLevel.Verbose();
-				
-            Log.Logger = logConfig.CreateLogger();
-            var cts = new CancellationTokenSource();
-            var client = new MongoClient();
-            var db = client.GetDatabase("Test");
-            var col = db.GetCollection<LockBase>("lockables");
-            await col.DeleteManyAsync(Builders<LockBase>.Filter.Empty);
             var lockBase = new LockBase();
-            await col.InsertOneAsync(lockBase);
-            var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
-            var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.IEnumerableLockables);
+            await _col.InsertOneAsync(lockBase);
+            var dataStore = new MongoDataStore<LockBase, InnerLock>(_col, _logger, TimeSpan.FromSeconds(30));
+            var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.EnumerableLockables);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.IEnumerableLockables.First()), "Failed to acquire lock.");
+            Assert.IsTrue(await lck.AcquireLockAsync(lockBase, lockBase.EnumerableLockables.First()), "Failed to acquire lock.");
 
-            Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
+            Assert.IsTrue(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
-            Assert.True(await lck.RefreshLockAsync(), "Failed to refresh lock.");
+            Assert.IsTrue(await lck.RefreshLockAsync(), "Failed to refresh lock.");
             
-            Assert.True(await lck.ReleaseLockAsync(), "Failed to release lock.");
+            Assert.IsTrue(await lck.ReleaseLockAsync(), "Failed to release lock.");
             
             lck.Dispose();
-            Assert.True(lck.Disposed, "Failed to mark object as disposed");
+            Assert.IsTrue(lck.Disposed, "Failed to mark object as disposed");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AcquireOneListSubClassAsync()
         {
-            var logConfig = new LoggerConfiguration()
-                .WriteTo.LiterateConsole(LogEventLevel.Error)
-                .MinimumLevel.Verbose();
-				
-            Log.Logger = logConfig.CreateLogger();
-            var cts = new CancellationTokenSource();
-            var client = new MongoClient();
-            var db = client.GetDatabase("Test");
-            var col = db.GetCollection<LockBase>("lockables");
-            await col.DeleteManyAsync(Builders<LockBase>.Filter.Empty);
             var lockBase = new LockBase();
-            await col.InsertOneAsync(lockBase);
-            var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
+            await _col.InsertOneAsync(lockBase);
+            var dataStore = new MongoDataStore<LockBase, InnerLock>(_col, _logger, TimeSpan.FromSeconds(30));
             var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.ListOfLockables);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.ListOfLockables.First()), "Failed to acquire lock.");
+            Assert.IsTrue(await lck.AcquireLockAsync(lockBase, lockBase.ListOfLockables.First()), "Failed to acquire lock.");
 
-            Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
+            Assert.IsTrue(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
-            Assert.True(await lck.RefreshLockAsync(), "Failed to refresh lock.");
+            Assert.IsTrue(await lck.RefreshLockAsync(), "Failed to refresh lock.");
             
-            Assert.True(await lck.ReleaseLockAsync(), "Failed to release lock.");
+            Assert.IsTrue(await lck.ReleaseLockAsync(), "Failed to release lock.");
             
             lck.Dispose();
-            Assert.True(lck.Disposed, "Failed to mark object as disposed");
+            Assert.IsTrue(lck.Disposed, "Failed to mark object as disposed");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AcquireOneArraySubClassAsync()
         {
-            var logConfig = new LoggerConfiguration()
-                .WriteTo.LiterateConsole(LogEventLevel.Error)
-                .MinimumLevel.Verbose();
-				
-            Log.Logger = logConfig.CreateLogger();
-            var cts = new CancellationTokenSource();
-            var client = new MongoClient();
-            var db = client.GetDatabase("Test");
-            var col = db.GetCollection<LockBase>("lockables");
-            await col.DeleteManyAsync(Builders<LockBase>.Filter.Empty);
             var lockBase = new LockBase();
-            await col.InsertOneAsync(lockBase);
-            var dataStore = new MongoDataStore<LockBase, InnerLock>(col, Log.Logger, TimeSpan.FromSeconds(30), cts.Token);
+            await _col.InsertOneAsync(lockBase);
+            var dataStore = new MongoDataStore<LockBase, InnerLock>(_col, _logger, TimeSpan.FromSeconds(30));
             var lck = new DistributedLock<LockBase, InnerLock, ObjectId>(dataStore, x => x.ArrayOfLockables);
             
-            Assert.True(await lck.AcquireLockAsync(lockBase, lockBase.ArrayOfLockables.First()), "Failed to acquire lock.");
+            Assert.IsTrue(await lck.AcquireLockAsync(lockBase, lockBase.ArrayOfLockables.First()), "Failed to acquire lock.");
 
-            Assert.True(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
+            Assert.IsTrue(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
             
-            Assert.True(await lck.RefreshLockAsync(), "Failed to refresh lock.");
+            Assert.IsTrue(await lck.RefreshLockAsync(), "Failed to refresh lock.");
             
-            Assert.True(await lck.ReleaseLockAsync(), "Failed to release lock.");
+            Assert.IsTrue(await lck.ReleaseLockAsync(), "Failed to release lock.");
             
             lck.Dispose();
-            Assert.True(lck.Disposed, "Failed to mark object as disposed");
+            Assert.IsTrue(lck.Disposed, "Failed to mark object as disposed");
+        }
+
+        [TestMethod]
+        public async Task AcquireOneBaseClassAfterLossAsync()
+        {
+            var lockBase = new LockBase();
+            await _col.InsertOneAsync(lockBase);
+            var dataStore = new MongoDataStore<LockBase>(_col, _logger, TimeSpan.FromSeconds(5));
+            var lck = new DistributedLock<LockBase, ObjectId>(dataStore, 2);
+
+            // Acquire the lock
+            Assert.IsTrue(await lck.AcquireLockAsync(lockBase), "Failed to acquire lock.");
+            Assert.IsTrue(lockBase.Id == lck.LockedObject.Id, "Locked Object is not the expected object.");
+            Assert.IsTrue(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
+            Assert.IsTrue(await lck.RefreshLockAsync(), "Failed to refresh lock.");
+            await Task.Delay(5000);
+
+            // Don't bother releasing it, attempt to re-acquire.
+            lck = new DistributedLock<LockBase, ObjectId>(dataStore, 2);
+            Assert.IsTrue(await lck.AcquireLockAsync(lockBase), "Failed to acquire lock.");
+            Assert.IsTrue(lockBase.Id == lck.LockedObject.Id, "Locked Object is not the expected object.");
+            Assert.IsTrue(lck.LockAcquired, "Lock should be acquired but it doesn't appear to be.");
+            Assert.IsTrue(await lck.RefreshLockAsync(), "Failed to refresh lock.");
+            Assert.IsTrue(await lck.ReleaseLockAsync(), "Failed to release lock.");
+
+            lck.Dispose();
+            Assert.IsTrue(lck.Disposed, "Failed to mark object as disposed");
         }
     }
 }

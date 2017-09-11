@@ -2,15 +2,15 @@ using System;
 
 namespace SharpLock
 {
-    public class SharpLockable<T> : SharpLockableBase<T>
+    public interface ISharpLockable<T> : ISharpLockableBase<T>
     {
         /// <summary>
         /// The timestamp of the last time the lock was refreshed.
         /// </summary>
-        public long? UpdateLock;
+        DateTime? UpdateLock { get; set; }
         /// <summary>
         /// The unique Id of the instance of the lock.
         /// </summary>
-        public Guid? LockId;
+        Guid? LockId { get; set; }
     }
 }

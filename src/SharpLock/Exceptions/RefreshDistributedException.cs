@@ -1,8 +1,9 @@
-namespace SharpLock
+namespace SharpLock.Exceptions
 {
     public class RefreshDistributedLockException : DistributedLockException
     {
-        public RefreshDistributedLockException() : base() { }
+        public RefreshDistributedLockException()
+        { }
         public RefreshDistributedLockException( string message ) : base( message ) { }
         public RefreshDistributedLockException( string message, System.Exception inner ) : base( message, inner ) { }
     }

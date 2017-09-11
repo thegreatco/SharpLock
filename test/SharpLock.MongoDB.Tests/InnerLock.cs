@@ -1,9 +1,9 @@
+using System;
 using MongoDB.Bson;
-using System.Collections;
 
 namespace SharpLock.MongoDB.Tests
 {
-    public class InnerLock : SharpLockable<ObjectId>
+    public class InnerLock : ISharpLockable<ObjectId>
     {
         public InnerLock()
         {
@@ -11,5 +11,8 @@ namespace SharpLock.MongoDB.Tests
             SomeVal = "abcd1234";
         }
         public string SomeVal { get; set;}
+        public ObjectId Id { get; set; }
+        public DateTime? UpdateLock { get; set; }
+        public Guid? LockId { get; set; }
     }
 }

@@ -7,15 +7,17 @@
     <AssemblyName>SharpLock.MongoDB</AssemblyName>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>An extension for SharpLock enabling locking of objects in a MongoDB Database.</Description>
-    <Version>1.0.14</Version>
+    <Version>1.0.19</Version>
     <PackageProjectUrl>https://github.com/thegreatco/SharpLock</PackageProjectUrl>
     <RepositoryUrl>https://github.com/thegreatco/SharpLock</RepositoryUrl>
     <Authors>TheGreatCO</Authors>
     <Company>TheGreatCO</Company>
     <Product>SharpLock.MongoDB</Product>
+    <AssemblyVersion>1.0.19.0</AssemblyVersion>
+    <PackageReleaseNotes>Changed to using an interface for lockable classes.</PackageReleaseNotes>
+    <PackageTags>sharplock distributed lock mongodb mongod</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="serilog" Version="2.3.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>

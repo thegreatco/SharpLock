@@ -1,4 +1,4 @@
-namespace SharpLock
+namespace SharpLock.Exceptions
 {
     public class DistributedLockException : System.Exception
     {

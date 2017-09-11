@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace SharpLock
 {
-    public interface IDataStore<TBaseObject, TLockableObject, TId> where TBaseObject : SharpLockableBase<TId> where TLockableObject : SharpLockable<TId>
+    public interface IDataStore<TBaseObject, TLockableObject, in TId> where TBaseObject : ISharpLockableBase<TId> where TLockableObject : ISharpLockable<TId>
     {
         ILogger GetLogger();
         CancellationToken GetToken();
@@ -20,8 +19,13 @@ namespace SharpLock
         Task<TBaseObject> ReleaseLockAsync(TId baseObjId, TLockableObject obj, Expression<Func<TBaseObject, IEnumerable<TLockableObject>>> fieldSelector, CancellationToken token);
     }
 
-    public interface IDataStore<TLockableObject, TId> : IDataStore<TLockableObject, TLockableObject, TId> where TLockableObject : SharpLockable<TId>
+    public interface IDataStore<TLockableObject, in TId> where TLockableObject : ISharpLockable<TId>
     {
-        
+        ILogger GetLogger();
+        CancellationToken GetToken();
+        TimeSpan GetLockTime();
+        Task<TLockableObject> AcquireLockAsync(TId baseObjId, TLockableObject obj, int staleLockMultiplier, CancellationToken token);
+        Task<TLockableObject> RefreshLockAsync(TId baseObjId, TLockableObject obj, CancellationToken token);
+        Task<TLockableObject> ReleaseLockAsync(TId baseObjId, TLockableObject obj, CancellationToken token);
     }
 }
