@@ -7,14 +7,14 @@
     <AssemblyName>SharpLock</AssemblyName>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>An extensible package for performing locking on an object across multiple processes synchronized using a persistent medium.</Description>
-    <Version>1.0.19</Version>
+    <Version>1.0.20</Version>
     <PackageProjectUrl>https://github.com/thegreatco/SharpLock</PackageProjectUrl>
     <RepositoryUrl>https://github.com/thegreatco/SharpLock</RepositoryUrl>
     <Authors>TheGreatCO</Authors>
     <Company>TheGreatCO</Company>
-    <AssemblyVersion>1.0.19.0</AssemblyVersion>
-    <FileVersion>1.0.19.0</FileVersion>
-    <PackageReleaseNotes>Changed to using an interface for lockable classes.</PackageReleaseNotes>
+    <AssemblyVersion>1.0.20.0</AssemblyVersion>
+    <FileVersion>1.0.20.0</FileVersion>
+    <PackageReleaseNotes>Changed the locking code around to reduce network chatter. Refreshing the lock no longer gets the locked object. It must be explicitly requested via GetObjectAsync.</PackageReleaseNotes>
     <PackageTags>sharplock distributed lock</PackageTags>
   </PropertyGroup>
 </Project>

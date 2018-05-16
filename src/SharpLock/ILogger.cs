@@ -2,7 +2,7 @@
 
 namespace SharpLock
 {
-    public interface ILogger
+    public interface ISharpLockLogger
     {
         void Critical(string message);
         void Critical(Exception ex);

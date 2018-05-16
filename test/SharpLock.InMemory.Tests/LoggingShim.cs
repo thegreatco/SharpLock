@@ -1,104 +1,97 @@
 ﻿using System;
 
-namespace SharpLock.MongoDB.Tests
+namespace SharpLock.InMemory.Tests
 {
     public class LoggingShim : ISharpLockLogger
     {
-        private readonly Serilog.ILogger _logger;
-
-        public LoggingShim(Serilog.ILogger logger)
-        {
-            _logger = logger;
-        }
-
         public void Critical(string message)
         {
-            _logger.Fatal(message);
+            Console.WriteLine(message);
         }
 
         public void Critical(Exception ex)
         {
-            _logger.Fatal(ex, string.Empty);
+            Console.WriteLine(ex);
         }
 
         public void Critical(Exception ex, string message)
         {
-            _logger.Fatal(ex, message);
+            Console.WriteLine($"{message} - {ex}");
         }
 
         public void Debug(string message, params object[] objs)
         {
-            _logger.Debug(message, objs);
+            Console.WriteLine(message, objs);
         }
 
         public void Debug(Exception ex)
         {
-            _logger.Debug(ex, string.Empty);
+            Console.WriteLine(ex);
         }
 
         public void Debug(Exception ex, string message)
         {
-            _logger.Debug(ex, message);
+            Console.WriteLine($"{message} - {ex}");
         }
 
         public void Error(string message)
         {
-            _logger.Error(message);
+            Console.WriteLine(message);
         }
 
         public void Error(Exception ex)
         {
-            _logger.Error(ex, string.Empty);
+            Console.WriteLine(ex);
         }
 
         public void Error(Exception ex, string message)
         {
-            _logger.Error(ex, message);
+            Console.WriteLine($"{message} - {ex}");
         }
 
         public void Information(string message)
         {
-            _logger.Information(message);
+            Console.WriteLine(message);
         }
 
         public void Information(Exception ex)
         {
-            _logger.Information(ex, string.Empty);
+            Console.WriteLine(ex);
         }
 
         public void Information(Exception ex, string message)
         {
-            _logger.Information(ex, message);
+            Console.WriteLine($"{message} - {ex}");
         }
 
         public void Trace(string message, params object[] objs)
         {
-            _logger.Verbose(message, objs);
+            Console.WriteLine(message, objs);
         }
 
         public void Trace(Exception ex)
         {
-            _logger.Verbose(ex, string.Empty);
+            Console.WriteLine(ex);
         }
 
         public void Trace(Exception ex, string message)
         {
-            _logger.Verbose(ex, message);
+            Console.WriteLine($"{message} - {ex}");
         }
 
         public void Warn(string message)
         {
-            _logger.Warning(message);
+            Console.WriteLine(message);
         }
 
         public void Warn(Exception ex)
         {
-            _logger.Warning(ex, string.Empty);
+            Console.WriteLine(ex);
         }
 
         public void Warn(Exception ex, string message)
         {
-            _logger.Warning(ex, message);
+            Console.WriteLine($"{message} - {ex}");
         }
     }
 }
