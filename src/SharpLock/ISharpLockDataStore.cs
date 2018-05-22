@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SharpLock
 {
-    public interface IDataStore<TBaseObject, TLockableObject, in TId> where TBaseObject : ISharpLockableBase<TId> where TLockableObject : ISharpLockable<TId>
+    public interface ISharpLockDataStore<TBaseObject, TLockableObject, in TId> where TBaseObject : ISharpLockableBase<TId> where TLockableObject : ISharpLockable<TId>
     {
         ISharpLockLogger GetLogger();
         TimeSpan GetLockTime();
@@ -44,7 +44,7 @@ namespace SharpLock
             CancellationToken cancellationToken = default(CancellationToken));
     }
 
-    public interface IDataStore<TLockableObject, in TId> where TLockableObject : ISharpLockable<TId>
+    public interface ISharpLockDataStore<TLockableObject, in TId> where TLockableObject : ISharpLockable<TId>
     {
         ISharpLockLogger GetLogger();
         TimeSpan GetLockTime();

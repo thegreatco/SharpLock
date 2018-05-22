@@ -8,7 +8,7 @@ namespace SharpLock
 {
     public class DistributedLock<TLockableObject, TId> : IDisposable where TLockableObject : class, ISharpLockable<TId>
     {
-        private readonly IDataStore<TLockableObject, TId> _store;
+        private readonly ISharpLockDataStore<TLockableObject, TId> _store;
         private readonly ISharpLockLogger _sharpLockLogger;
         private readonly int _staleLockMultiplier;
         private Type _lockedObjectType;
@@ -41,7 +41,7 @@ namespace SharpLock
         /// </summary>
         /// <param name="store">The object store where the object exists.</param>
         /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
-        public DistributedLock(IDataStore<TLockableObject, TId> store, int staleLockMultiplier = 10)
+        public DistributedLock(ISharpLockDataStore<TLockableObject, TId> store, int staleLockMultiplier = 10)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _sharpLockLogger = _store.GetLogger();
@@ -51,7 +51,7 @@ namespace SharpLock
 
         /// <summary>
         /// Asynchronously acquire a lock on the specified TLockableObject.
-        /// This will wait <see cref="IDataStore{TLockableObject,TId}.GetLockTime"/> * <see cref="_staleLockMultiplier"/> to acquire the lock.
+        /// This will wait <see cref="ISharpLockDataStore{TLockableObject,TId}.GetLockTime"/> * <see cref="_staleLockMultiplier"/> to acquire the lock.
         /// To specified a timeout, use the appropriate overload.
         /// </summary>
         /// <param name="obj">The object to take a lock on.</param>
@@ -92,7 +92,7 @@ namespace SharpLock
                 }
             }
 
-            _sharpLockLogger.Trace("Lock attempt complete on {Type} with LockId: {LockId}. Lock Acquired? {LockState}", _lockedObjectType, _lockedObjectId, LockAcquired);
+            _sharpLockLogger.Trace("Lock attempt complete on {0} with LockId: {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
             if (lockedObj == null && throwOnFailure)
                 throw new AcquireDistributedLockException("Failed to acquire lock.");
@@ -122,7 +122,7 @@ namespace SharpLock
                 LockedObjectId = default(TId);
             }
 
-            _sharpLockLogger.Trace("Lock refresh complete on {Type} with {Id}. Lock Acquired? {LockState}", _lockedObjectType, _lockedObjectId, LockAcquired);
+            _sharpLockLogger.Trace("Lock refresh complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
             if (!LockAcquired && throwOnFailure)
                 throw new RefreshDistributedLockException("Failed to refresh lock.");
@@ -151,7 +151,7 @@ namespace SharpLock
                 LockedObjectId = default(TId);
             }
 
-            _sharpLockLogger.Trace("Lock release complete on {Type} with {Id}. Lock Acquired? {LockState}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
+            _sharpLockLogger.Trace("Lock release complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
             
             if (LockAcquired && throwOnFailure)
                 throw new ReleaseDistributedLockException("Failed to release lock.");

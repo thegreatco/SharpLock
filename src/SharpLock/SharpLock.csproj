@@ -1,20 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <VersionPrefix>1.0.12</VersionPrefix>
-    <TargetFramework>netstandard1.5</TargetFramework>
+    <TargetFramework>netstandard1.0</TargetFramework>
     <PlatformTarget>anycpu</PlatformTarget>
     <DebugType>portable</DebugType>
     <AssemblyName>SharpLock</AssemblyName>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <RootNamespace>SharpLock</RootNamespace>
+    <PackageTags>sharplock distributed lock</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Description>An extensible package for performing locking on an object across multiple processes synchronized using a persistent medium.</Description>
-    <Version>1.0.20</Version>
     <PackageProjectUrl>https://github.com/thegreatco/SharpLock</PackageProjectUrl>
     <RepositoryUrl>https://github.com/thegreatco/SharpLock</RepositoryUrl>
     <Authors>TheGreatCO</Authors>
     <Company>TheGreatCO</Company>
-    <AssemblyVersion>1.0.20.0</AssemblyVersion>
-    <FileVersion>1.0.20.0</FileVersion>
-    <PackageReleaseNotes>Changed the locking code around to reduce network chatter. Refreshing the lock no longer gets the locked object. It must be explicitly requested via GetObjectAsync.</PackageReleaseNotes>
-    <PackageTags>sharplock distributed lock</PackageTags>
+    <Version Condition=" '$(FILE_VERSION)' == '' ">1.0.0.0</Version>
+    <Version Condition=" '$(FILE_VERSION)' != '' ">$(FILE_VERSION)</Version>
+    <AssemblyVersion Condition=" '$(FILE_VERSION)' == '' ">1.0.0.0</AssemblyVersion>
+    <AssemblyVersion Condition=" '$(FILE_VERSION)' != '' ">$(FILE_VERSION)</AssemblyVersion>
+    <FileVersion Condition=" '$(FILE_VERSION)' == '' ">1.0.0.0</FileVersion>
+    <FileVersion Condition=" '$(FILE_VERSION)' != '' ">$(FILE_VERSION)</FileVersion>
   </PropertyGroup>
 </Project>
