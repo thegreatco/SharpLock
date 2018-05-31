@@ -19,4 +19,7 @@
     <FileVersion Condition=" '$(FILE_VERSION)' == '' ">1.0.0.0</FileVersion>
     <FileVersion Condition=" '$(FILE_VERSION)' != '' ">$(FILE_VERSION)</FileVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
+  </ItemGroup>
 </Project>
