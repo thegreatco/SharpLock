@@ -1,4 +1,9 @@
+# SharpLock
 This is the base package for implementations of SharpLock. This provides the interfaces and base types for distributed locking.
+
+| dev | master |
+| --- | ------ |
+| [![CircleCI](https://circleci.com/gh/thegreatco/SharpLock/tree/dev.svg?style=svg)](https://circleci.com/gh/thegreatco/SharpLock/tree/dev) | [![CircleCI](https://circleci.com/gh/thegreatco/SharpLock/tree/master.svg?style=svg)](https://circleci.com/gh/thegreatco/SharpLock/tree/master) |
 
 # Usage
 ## Creating a Lockable Object
