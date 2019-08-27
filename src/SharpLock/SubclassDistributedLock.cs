@@ -105,7 +105,7 @@ namespace SharpLock
         /// <param name="timeout">The amount of time to wait to acquire the lock.</param>
         /// <param name="throwOnFailure">Throw an exception if the acquisition fails.</param>
         /// <returns>A <see cref="bool"/> indicating if the lock attempt was successful.</returns>
-        public async Task<TBaseObject> AcquireLockAsync(TBaseObject baseObj, TLockableObject obj, TimeSpan timeout, bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TBaseObject> AcquireLockAsync(TBaseObject baseObj, TLockableObject obj, TimeSpan timeout, bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             if (baseObj == null) throw new ArgumentNullException(nameof(baseObj), "Base Object cannot be null");
             if (obj == null) throw new ArgumentNullException(nameof(obj), "Lockable Object cannot be null");
@@ -118,17 +118,17 @@ namespace SharpLock
             while (newBaseObj == null && !cancellationToken.IsCancellationRequested && DateTime.UtcNow < timeoutDate)
             {
                 if (_tLockableObjectFieldSelector != null)
-                    newBaseObj = await _store.AcquireLockAsync(baseObj.Id, obj, _tLockableObjectFieldSelector, _staleLockMultiplier, cancellationToken);
+                    newBaseObj = await _store.AcquireLockAsync(baseObj.Id, obj, _tLockableObjectFieldSelector, _staleLockMultiplier, cancellationToken).ConfigureAwait(false);
                 else if (_tLockableObjectArrayFieldSelector != null)
-                    newBaseObj = await _store.AcquireLockAsync(baseObj.Id, obj, _tLockableObjectArrayFieldSelector, _staleLockMultiplier, cancellationToken);
+                    newBaseObj = await _store.AcquireLockAsync(baseObj.Id, obj, _tLockableObjectArrayFieldSelector, _staleLockMultiplier, cancellationToken).ConfigureAwait(false);
                 else
                     throw new AcquireDistributedLockException("No fieldSelector found.");
                 
                 // If the returned object is null, we need to set both the BaseObject and LockedObject
                 if (newBaseObj == null)
                 {
-                    LockedObjectId = default(TId);
-                    BaseObjectId = default(TId);
+                    LockedObjectId = default;
+                    BaseObjectId = default;
                     LockedObjectLockId = null;
                 }
                 else
@@ -139,7 +139,8 @@ namespace SharpLock
                     LockedObjectId = lockedObject.Id;
                 }
 
-                if (!LockAcquired) await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                if (!LockAcquired) 
+                    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
             }
 
             _sharpLockLogger.Debug("Lock attempt complete on {0} with LockId: {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
@@ -155,7 +156,7 @@ namespace SharpLock
         /// </summary>
         /// <param name="throwOnFailure">A <see cref="bool"/> indicating if a failure to renew the lock should throw an exception.</param>
         /// <returns>A value indicating if the renewal of the lock was successful.</returns>
-        public async Task<bool> RefreshLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<bool> RefreshLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             if (!LockAcquired)
             {
@@ -167,17 +168,17 @@ namespace SharpLock
 
             bool lockRefreshed;
             if (_tLockableObjectFieldSelector != null)
-                lockRefreshed = await _store.RefreshLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectFieldSelector, cancellationToken);
+                lockRefreshed = await _store.RefreshLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectFieldSelector, cancellationToken).ConfigureAwait(false);
             else if (_tLockableObjectArrayFieldSelector != null)
-                lockRefreshed = await _store.RefreshLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken);
+                lockRefreshed = await _store.RefreshLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken).ConfigureAwait(false);
             else
                 throw new RefreshDistributedLockException("No fieldSelector found.");
             
             if (lockRefreshed == false)
             {
-                LockedObjectId = default(TId);
+                LockedObjectId = default;
                 LockedObjectLockId = null;
-                BaseObjectId = default(TId);
+                BaseObjectId = default;
             }
             _sharpLockLogger.Debug("Lock refresh complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
@@ -191,7 +192,7 @@ namespace SharpLock
         /// </summary>
         /// <param name="throwOnFailure">A <see cref="bool"/> indicating if a failure to release the lock should throw an exception.</param>
         /// <returns>A value indicating if the release of the lock was successful.</returns>
-        public async Task<bool> ReleaseLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<bool> ReleaseLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             if (!LockAcquired)
             {
@@ -203,16 +204,16 @@ namespace SharpLock
 
             bool lockReleased;
             if (_tLockableObjectFieldSelector != null)
-                lockReleased = await _store.ReleaseLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectFieldSelector, cancellationToken);
+                lockReleased = await _store.ReleaseLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectFieldSelector, cancellationToken).ConfigureAwait(false);
             else if (_tLockableObjectArrayFieldSelector != null)
-                lockReleased = await _store.ReleaseLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken);
+                lockReleased = await _store.ReleaseLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken).ConfigureAwait(false);
             else
                 throw new ReleaseDistributedLockException("No fieldSelector found.");
 
             if (lockReleased)
             {
-                BaseObjectId = default(TId);
-                LockedObjectId = default(TId);
+                BaseObjectId = default;
+                LockedObjectId = default;
                 LockedObjectLockId = null;
             }
             
@@ -229,7 +230,7 @@ namespace SharpLock
         /// </summary>
         /// <param name="throwOnFailure">A <see cref="bool"/> indicating if a failure to release the lock should throw an exception.</param>
         /// <returns>An instance of the base object.</returns>
-        public async Task<TBaseObject> GetObjectAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TBaseObject> GetObjectAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             if (!LockAcquired)
             {
@@ -240,9 +241,9 @@ namespace SharpLock
             Debug.Assert(LockedObjectLockId != null, nameof(LockedObjectLockId) + " != null");
 
             if (_tLockableObjectFieldSelector != null)
-                return await _store.GetLockedObjectAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectFieldSelector, cancellationToken);
+                return await _store.GetLockedObjectAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectFieldSelector, cancellationToken).ConfigureAwait(false);
             if (_tLockableObjectArrayFieldSelector != null)
-                return await _store.GetLockedObjectAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken);
+                return await _store.GetLockedObjectAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken).ConfigureAwait(false);
             
             throw new DistributedLockException("No fieldSelector found.");
         }
@@ -254,7 +255,7 @@ namespace SharpLock
         public void Dispose()
         {
             if (LockAcquired)
-                ReleaseLockAsync().Wait();
+                Disposed = ReleaseLockAsync().Result;
             Disposed = true;
         }
 

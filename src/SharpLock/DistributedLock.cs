@@ -72,7 +72,7 @@ namespace SharpLock
         /// <param name="throwOnFailure">Throw an exception if the acquisition fails.</param>
         /// <param name="cancellationToken">The cancellation token to use during lock acquisition.</param>
         /// <returns>A <see cref="bool"/> indicating if the lock attempt was successful.</returns>
-        public async Task<TLockableObject> AcquireLockAsync(TLockableObject obj, TimeSpan timeout, bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TLockableObject> AcquireLockAsync(TLockableObject obj, TimeSpan timeout, bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             var timeoutDate = DateTime.UtcNow.Add(timeout);
             _lockedObjectType = obj.GetType();
@@ -82,9 +82,12 @@ namespace SharpLock
             TLockableObject lockedObj = null;
             while (lockedObj == null && !cancellationToken.IsCancellationRequested && DateTime.UtcNow < timeoutDate)
             {
-                lockedObj = await _store.AcquireLockAsync(obj.Id, obj, _staleLockMultiplier, cancellationToken);
+                lockedObj = await _store.AcquireLockAsync(obj.Id, obj, _staleLockMultiplier, cancellationToken).ConfigureAwait(false);
                 
-                if (lockedObj == null) await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                if (lockedObj == null)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+                }
                 else
                 {
                     LockedObjectLockId = lockedObj.LockId;
@@ -105,7 +108,7 @@ namespace SharpLock
         /// </summary>
         /// <param name="throwOnFailure">A <see cref="bool"/> indicating if a failure to renew the lock should throw an exception.</param>
         /// <returns>A value indicating if the renewal of the lock was successful.</returns>
-        public async Task<bool> RefreshLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<bool> RefreshLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             if (!LockAcquired)
             {
@@ -114,12 +117,12 @@ namespace SharpLock
             }
 
             Debug.Assert(LockedObjectLockId != null, nameof(LockedObjectLockId) + " != null");
-            var lockRefreshed = await _store.RefreshLockAsync(LockedObjectId, LockedObjectLockId.Value, cancellationToken);
+            var lockRefreshed = await _store.RefreshLockAsync(LockedObjectId, LockedObjectLockId.Value, cancellationToken).ConfigureAwait(false);
 
             if (lockRefreshed == false)
             {
                 LockedObjectLockId = null;
-                LockedObjectId = default(TId);
+                LockedObjectId = default;
             }
 
             _sharpLockLogger.Trace("Lock refresh complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
@@ -134,7 +137,7 @@ namespace SharpLock
         /// </summary>
         /// <param name="throwOnFailure">A <see cref="bool"/> indicating if a failure to release the lock should throw an exception.</param>
         /// <returns>A value indicating if the release of the lock was successful.</returns>
-        public async Task<bool> ReleaseLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<bool> ReleaseLockAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             if (!LockAcquired)
             {
@@ -143,12 +146,12 @@ namespace SharpLock
             }
 
             Debug.Assert(LockedObjectLockId != null, nameof(LockedObjectLockId) + " != null");
-            var lockReleased = await _store.ReleaseLockAsync(LockedObjectId, LockedObjectLockId.Value, cancellationToken);
+            var lockReleased = await _store.ReleaseLockAsync(LockedObjectId, LockedObjectLockId.Value, cancellationToken).ConfigureAwait(false);
 
             if (lockReleased)
             {
                 LockedObjectLockId = null;
-                LockedObjectId = default(TId);
+                LockedObjectId = default;
             }
 
             _sharpLockLogger.Trace("Lock release complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
@@ -164,7 +167,7 @@ namespace SharpLock
         /// </summary>
         /// <param name="throwOnFailure">A <see cref="bool"/> indicating if a failure to release the lock should throw an exception.</param>
         /// <returns>An instance of the base object.</returns>
-        public async Task<TLockableObject> GetObjectAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TLockableObject> GetObjectAsync(bool throwOnFailure = false, CancellationToken cancellationToken = default)
         {
             if (!LockAcquired)
             {
@@ -173,7 +176,7 @@ namespace SharpLock
             }
 
             Debug.Assert(LockedObjectLockId != null, nameof(LockedObjectLockId) + " != null");
-            return await _store.GetLockedObjectAsync(LockedObjectId, LockedObjectLockId.Value, cancellationToken);
+            return await _store.GetLockedObjectAsync(LockedObjectId, LockedObjectLockId.Value, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -183,7 +186,7 @@ namespace SharpLock
         public void Dispose()
         {
             if (LockAcquired)
-                ReleaseLockAsync().Wait();
+                Disposed = ReleaseLockAsync().Result;
             Disposed = true;
         }
 
