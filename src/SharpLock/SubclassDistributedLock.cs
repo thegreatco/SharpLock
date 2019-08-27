@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SharpLock
 {
-    public class DistributedLock<TBaseObject, TLockableObject, TId> : IDisposable where TLockableObject : class, ISharpLockable<TId> where TBaseObject : class, ISharpLockableBase<TId>
+    public class DistributedLock<TBaseObject, TLockableObject, TId> : IAsyncDisposable where TLockableObject : class, ISharpLockable<TId> where TBaseObject : class, ISharpLockableBase<TId>
     {
         private readonly ISharpLockDataStore<TBaseObject, TLockableObject, TId> _store;
         private readonly ILogger _logger;
@@ -301,17 +301,6 @@ namespace SharpLock
             throw new DistributedLockException("No fieldSelector found.");
         }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Dispose of this current instance of <see cref="T:SharpLock.DistributedLock`2" />
-        /// </summary>
-        public void Dispose()
-        {
-            if (LockAcquired)
-                Disposed = ReleaseLockAsync().Result;
-            Disposed = true;
-        }
-
         public override string ToString()
         {
             return LockAcquired ? $"LockId: {LockedObjectLockId}, Locked ObjectId: {LockedObjectId}." : "No lock acquired.";
@@ -324,6 +313,17 @@ namespace SharpLock
             if (_tLockableObjectArrayFieldSelector != null)
                 return _tLockableObjectArrayFieldSelector.Compile().Invoke(baseObj).SingleOrDefault(x => x.Id.Equals(_lockedObjectId));
             throw new DistributedLockException($"No suitable selector found to get {typeof(TLockableObject)} from {typeof(TBaseObject)}");
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Dispose of this current instance of <see cref="DistributedLock{TBaseObject, TLockableObject, TId}" />
+        /// </summary>
+        public async ValueTask DisposeAsync()
+        {
+            if (LockAcquired)
+                await ReleaseLockAsync().ConfigureAwait(false);
+            Disposed = true;
         }
     }
 }

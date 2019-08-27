@@ -7,7 +7,7 @@ using SharpLock.Exceptions;
 
 namespace SharpLock
 {
-    public class DistributedLock<TLockableObject, TId> : IDisposable where TLockableObject : class, ISharpLockable<TId>
+    public class DistributedLock<TLockableObject, TId> : IAsyncDisposable where TLockableObject : class, ISharpLockable<TId>
     {
         private readonly ISharpLockDataStore<TLockableObject, TId> _store;
         private readonly ILogger _logger;
@@ -204,12 +204,12 @@ namespace SharpLock
 
         /// <inheritdoc />
         /// <summary>
-        /// Dispose of this current instance of <see cref="T:SharpLock.DistributedLock`2" />
+        /// Dispose of this current instance of <see cref="DistributedLock{TLockableObject, TId}" />
         /// </summary>
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (LockAcquired)
-                Disposed = ReleaseLockAsync().Result;
+                await ReleaseLockAsync().ConfigureAwait(false);
             Disposed = true;
         }
 
