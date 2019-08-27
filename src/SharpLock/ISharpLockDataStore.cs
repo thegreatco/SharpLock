@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -8,7 +9,7 @@ namespace SharpLock
 {
     public interface ISharpLockDataStore<TBaseObject, TLockableObject, in TId> where TBaseObject : ISharpLockableBase<TId> where TLockableObject : ISharpLockable<TId>
     {
-        ISharpLockLogger GetLogger();
+        ILogger GetLogger();
         TimeSpan GetLockTime();
 
         Task<TBaseObject> AcquireLockAsync(TId baseObjId, TLockableObject obj,
@@ -46,7 +47,7 @@ namespace SharpLock
 
     public interface ISharpLockDataStore<TLockableObject, in TId> where TLockableObject : ISharpLockable<TId>
     {
-        ISharpLockLogger GetLogger();
+        ILogger GetLogger();
         TimeSpan GetLockTime();
 
         Task<TLockableObject> AcquireLockAsync(TId baseObjId, TLockableObject obj, int staleLockMultiplier,

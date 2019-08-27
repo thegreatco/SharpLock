@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using SharpLock.Exceptions;
 
 namespace SharpLock
@@ -9,7 +10,7 @@ namespace SharpLock
     public class DistributedLock<TLockableObject, TId> : IDisposable where TLockableObject : class, ISharpLockable<TId>
     {
         private readonly ISharpLockDataStore<TLockableObject, TId> _store;
-        private readonly ISharpLockLogger _sharpLockLogger;
+        private readonly ILogger _logger;
         private readonly int _staleLockMultiplier;
         private Type _lockedObjectType;
         private TId _lockedObjectId;
@@ -39,14 +40,36 @@ namespace SharpLock
         /// <summary>
         /// Creates a new instance of the DistributedLock class.
         /// </summary>
+        /// <param name="logger">A <see cref="ILogger"/> to use for operation logging.</param>
         /// <param name="store">The object store where the object exists.</param>
         /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
-        public DistributedLock(ISharpLockDataStore<TLockableObject, TId> store, int staleLockMultiplier = 10)
+        public DistributedLock(ILogger logger, ISharpLockDataStore<TLockableObject, TId> store, int staleLockMultiplier = 10)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
-            _sharpLockLogger = _store.GetLogger();
+            _logger = logger;
             LockTime = _store.GetLockTime();
             _staleLockMultiplier = staleLockMultiplier;
+        }
+
+        /// <summary>
+        /// Creates a new instance of the DistributedLock class.
+        /// </summary>
+        /// <param name="store">The object store where the object exists.</param>
+        /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
+        public DistributedLock(ISharpLockDataStore<TLockableObject, TId> store, int staleLockMultiplier = 10) 
+            : this(store.GetLogger(), store, staleLockMultiplier)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of the DistributedLock class.
+        /// </summary>
+        /// <param name="loggerFactory">A <see cref="ILoggerFactory"/> to obtain a <see cref="ILogger"/> for operation logging.</param>
+        /// <param name="store">The object store where the object exists.</param>
+        /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
+        public DistributedLock(ILoggerFactory loggerFactory, ISharpLockDataStore<TLockableObject, TId> store, int staleLockMultiplier = 10)
+            : this(loggerFactory.CreateLogger<DistributedLock<TLockableObject, TId>>(), store, staleLockMultiplier)
+        {
         }
 
         /// <summary>
@@ -95,7 +118,7 @@ namespace SharpLock
                 }
             }
 
-            _sharpLockLogger.Trace("Lock attempt complete on {0} with LockId: {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
+            _logger.LogDebug("Lock attempt complete on {0} with LockId: {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
             if (lockedObj == null && throwOnFailure)
                 throw new AcquireDistributedLockException("Failed to acquire lock.");
@@ -125,7 +148,7 @@ namespace SharpLock
                 LockedObjectId = default;
             }
 
-            _sharpLockLogger.Trace("Lock refresh complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
+            _logger.LogDebug("Lock refresh complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
             if (!LockAcquired && throwOnFailure)
                 throw new RefreshDistributedLockException("Failed to refresh lock.");
@@ -154,7 +177,7 @@ namespace SharpLock
                 LockedObjectId = default;
             }
 
-            _sharpLockLogger.Trace("Lock release complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
+            _logger.LogDebug("Lock release complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
             
             if (LockAcquired && throwOnFailure)
                 throw new ReleaseDistributedLockException("Failed to release lock.");

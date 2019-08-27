@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SharpLock.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace SharpLock
 {
     public class DistributedLock<TBaseObject, TLockableObject, TId> : IDisposable where TLockableObject : class, ISharpLockable<TId> where TBaseObject : class, ISharpLockableBase<TId>
     {
         private readonly ISharpLockDataStore<TBaseObject, TLockableObject, TId> _store;
-        private readonly ISharpLockLogger _sharpLockLogger;
+        private readonly ILogger _logger;
         private readonly Expression<Func<TBaseObject, TLockableObject>> _tLockableObjectFieldSelector;
         private readonly Expression<Func<TBaseObject, IEnumerable<TLockableObject>>> _tLockableObjectArrayFieldSelector;
         private readonly int _staleLockMultiplier;
@@ -49,10 +50,10 @@ namespace SharpLock
         /// </summary>
         public bool Disposed { get; set; }
 
-        internal DistributedLock(ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, int staleLockMultiplier)
+        internal DistributedLock(ILogger logger, ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, int staleLockMultiplier)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
-            _sharpLockLogger = _store.GetLogger();
+            _logger = logger;
             LockTime = _store.GetLockTime();
             _staleLockMultiplier = staleLockMultiplier;
         }
@@ -64,7 +65,7 @@ namespace SharpLock
         /// <param name="fieldSelector">A LINQ expression giving the path to the <seealso cref="TLockableObject"/></param>
         /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
         public DistributedLock(ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, Expression<Func<TBaseObject, TLockableObject>> fieldSelector, int staleLockMultiplier = 5)
-            : this(store, staleLockMultiplier)
+            : this(store.GetLogger(), store, staleLockMultiplier)
         {
             _tLockableObjectFieldSelector = fieldSelector ?? throw new ArgumentNullException(nameof(fieldSelector));
         }
@@ -76,7 +77,59 @@ namespace SharpLock
         /// <param name="fieldSelector">A LINQ expression giving the path to the <seealso cref="TLockableObject"/></param>
         /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
         public DistributedLock(ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, Expression<Func<TBaseObject, IEnumerable<TLockableObject>>> fieldSelector, int staleLockMultiplier = 5)
-            : this(store, staleLockMultiplier)
+            : this(store.GetLogger(), store, staleLockMultiplier)
+        {
+            _tLockableObjectArrayFieldSelector = fieldSelector ?? throw new ArgumentNullException(nameof(fieldSelector));
+        }
+
+        /// <summary>
+        /// Creates a new instance of the DistributedLock class.
+        /// </summary>
+        /// <param name="logger">A <see cref="ILogger"/> to use for operation logging.</param>
+        /// <param name="store">The object store where the object exists.</param>
+        /// <param name="fieldSelector">A LINQ expression giving the path to the <seealso cref="TLockableObject"/></param>
+        /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
+        public DistributedLock(ILogger logger, ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, Expression<Func<TBaseObject, TLockableObject>> fieldSelector, int staleLockMultiplier = 5)
+            : this(logger, store, staleLockMultiplier)
+        {
+            _tLockableObjectFieldSelector = fieldSelector ?? throw new ArgumentNullException(nameof(fieldSelector));
+        }
+
+        /// <summary>
+        /// Creates a new instance of the DistributedLock class.
+        /// </summary>
+        /// <param name="logger">A <see cref="ILogger"/> to use for operation logging.</param>
+        /// <param name="store">The object store where the object exists.</param>
+        /// <param name="fieldSelector">A LINQ expression giving the path to the <seealso cref="TLockableObject"/></param>
+        /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
+        public DistributedLock(ILogger logger, ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, Expression<Func<TBaseObject, IEnumerable<TLockableObject>>> fieldSelector, int staleLockMultiplier = 5)
+            : this(logger, store, staleLockMultiplier)
+        {
+            _tLockableObjectArrayFieldSelector = fieldSelector ?? throw new ArgumentNullException(nameof(fieldSelector));
+        }
+
+        /// <summary>
+        /// Creates a new instance of the DistributedLock class.
+        /// </summary>
+        /// <param name="loggerFactory">A <see cref="ILoggerFactory"/> to obtain a <see cref="ILogger"/> for operation logging.</param>
+        /// <param name="store">The object store where the object exists.</param>
+        /// <param name="fieldSelector">A LINQ expression giving the path to the <seealso cref="TLockableObject"/></param>
+        /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
+        public DistributedLock(ILoggerFactory loggerFactory, ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, Expression<Func<TBaseObject, TLockableObject>> fieldSelector, int staleLockMultiplier = 5)
+            : this(loggerFactory.CreateLogger<DistributedLock<TBaseObject, TLockableObject, TId>>(), store, staleLockMultiplier)
+        {
+            _tLockableObjectFieldSelector = fieldSelector ?? throw new ArgumentNullException(nameof(fieldSelector));
+        }
+
+        /// <summary>
+        /// Creates a new instance of the DistributedLock class.
+        /// </summary>
+        /// <param name="loggerFactory">A <see cref="ILoggerFactory"/> to obtain a <see cref="ILogger"/> for operation logging.</param>
+        /// <param name="store">The object store where the object exists.</param>
+        /// <param name="fieldSelector">A LINQ expression giving the path to the <seealso cref="TLockableObject"/></param>
+        /// <param name="staleLockMultiplier">A multiplier used to determine if a previously locked object is stale. Setting this value too short will result in one lock overwriting another.</param>
+        public DistributedLock(ILoggerFactory loggerFactory, ISharpLockDataStore<TBaseObject, TLockableObject, TId> store, Expression<Func<TBaseObject, IEnumerable<TLockableObject>>> fieldSelector, int staleLockMultiplier = 5)
+            : this(loggerFactory.CreateLogger<DistributedLock<TBaseObject, TLockableObject, TId>>(), store, staleLockMultiplier)
         {
             _tLockableObjectArrayFieldSelector = fieldSelector ?? throw new ArgumentNullException(nameof(fieldSelector));
         }
@@ -143,7 +196,7 @@ namespace SharpLock
                     await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
             }
 
-            _sharpLockLogger.Debug("Lock attempt complete on {0} with LockId: {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
+            _logger.LogDebug("Lock attempt complete on {0} with LockId: {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
             if (!LockAcquired && throwOnFailure)
                 throw new AcquireDistributedLockException("Failed to acquire lock.");
@@ -180,7 +233,7 @@ namespace SharpLock
                 LockedObjectLockId = null;
                 BaseObjectId = default;
             }
-            _sharpLockLogger.Debug("Lock refresh complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
+            _logger.LogDebug("Lock refresh complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType, _lockedObjectId, LockAcquired);
 
             if (!LockAcquired && throwOnFailure)
                 throw new RefreshDistributedLockException("Failed to refresh lock.");
@@ -217,7 +270,7 @@ namespace SharpLock
                 LockedObjectLockId = null;
             }
             
-            _sharpLockLogger.Debug("Lock release complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
+            _logger.LogDebug("Lock release complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
             
             if (LockAcquired && throwOnFailure)
                 throw new ReleaseDistributedLockException("Failed to release lock.");
