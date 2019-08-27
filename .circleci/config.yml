@@ -32,16 +32,13 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /.*/
+      - build
       - deploy:
           context: nuget_key
           requires: 
             - build
           filters:
             branches:
-              only: master
+              ignore: /.*/
             tags:
               only: /^(?:[0-9]+\.?)+/
