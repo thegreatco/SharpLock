@@ -35,13 +35,13 @@ workflows:
       - build:
           filters:
             tags:
-              only: /.*/
+              only: /^(?:[0-9]+\.?)+/
       - deploy:
           context: nuget_key
-          requires:
+          requires: 
             - build
           filters:
-            tags:
-              only: /.*/
             branches:
               ignore: /.*/
+            tags:
+              only: /^(?:[0-9]+\.?)+/
