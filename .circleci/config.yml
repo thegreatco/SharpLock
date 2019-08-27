@@ -38,10 +38,10 @@ workflows:
               only: /.*/
       - deploy:
           context: nuget_key
-          requires: 
+          requires:
             - build
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /.*/
+            branches:
+              ignore: /.*/
