@@ -24,12 +24,9 @@ jobs:
             echo 'export FILE_VERSION=${CIRCLE_TAG}.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
             echo 'export NUGET_VERSION=${CIRCLE_TAG}' >> $BASH_ENV
             source $BASH_ENV
-      - run: curl -OL https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-      - run: nuget setApiKey ${NUGET_API_KEY}
       - run: dotnet restore SharpLock.sln
-      - run: dotnet pack src/SharpLock/SharpLock.csproj -o ../../nupkgs --include-symbols /p:Version=${NUGET_VERSION}
-      - run: nuget push nupkgs/SharpLock.${NUGET_VERSION}.nupkg -source https://api.nuget.org/v3/index.json
-      - run: nuget push nupkgs/SharpLock.${NUGET_VERSION}.symbols.nupkg -source https://nuget.smbsrc.net/
+      - run: dotnet pack src/SharpLock/SharpLock.csproj -o nupkgs /p:Version=${NUGET_VERSION}
+      - run: dotnet nuget push nupkgs/SharpLock.${NUGET_VERSION}.nupkg -k ${NUGET_API_KEY} -s https://api.nuget.org/v3/index.json
 
 workflows:
   version: 2
