@@ -7,7 +7,11 @@ using SharpLock.Exceptions;
 
 namespace SharpLock
 {
-    public class DistributedLock<TLockableObject, TId> : IAsyncDisposable where TLockableObject : class, ISharpLockable<TId>
+#if NETSTANDARD2_1
+    public class DistributedLock<TLockableObject, TId> : IDisposable, IAsyncDisposable where TLockableObject : class, ISharpLockable<TId>
+#else
+    public class DistributedLock<TLockableObject, TId> : IDisposable where TLockableObject : class, ISharpLockable<TId>
+#endif
     {
         private readonly ISharpLockDataStore<TLockableObject, TId> _store;
         private readonly ILogger _logger;
@@ -211,6 +215,11 @@ namespace SharpLock
             if (LockAcquired)
                 await ReleaseLockAsync().ConfigureAwait(false);
             Disposed = true;
+        }
+
+        public void Dispose()
+        {
+            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public override string ToString()

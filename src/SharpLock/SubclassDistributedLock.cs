@@ -10,7 +10,11 @@ using Microsoft.Extensions.Logging;
 
 namespace SharpLock
 {
-    public class DistributedLock<TBaseObject, TLockableObject, TId> : IAsyncDisposable where TLockableObject : class, ISharpLockable<TId> where TBaseObject : class, ISharpLockableBase<TId>
+#if NETSTANDARD2_1
+    public class DistributedLock<TBaseObject, TLockableObject, TId> : IDisposable, IAsyncDisposable where TLockableObject : class, ISharpLockable<TId> where TBaseObject : class, ISharpLockableBase<TId>
+#else
+    public class DistributedLock<TBaseObject, TLockableObject, TId> : IDisposable where TLockableObject : class, ISharpLockable<TId> where TBaseObject : class, ISharpLockableBase<TId>
+#endif
     {
         private readonly ISharpLockDataStore<TBaseObject, TLockableObject, TId> _store;
         private readonly ILogger _logger;
@@ -176,7 +180,7 @@ namespace SharpLock
                     newBaseObj = await _store.AcquireLockAsync(baseObj.Id, obj, _tLockableObjectArrayFieldSelector, _staleLockMultiplier, cancellationToken).ConfigureAwait(false);
                 else
                     throw new AcquireDistributedLockException("No fieldSelector found.");
-                
+
                 // If the returned object is null, we need to set both the BaseObject and LockedObject
                 if (newBaseObj == null)
                 {
@@ -192,7 +196,7 @@ namespace SharpLock
                     LockedObjectId = lockedObject.Id;
                 }
 
-                if (!LockAcquired) 
+                if (!LockAcquired)
                     await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
             }
 
@@ -226,7 +230,7 @@ namespace SharpLock
                 lockRefreshed = await _store.RefreshLockAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken).ConfigureAwait(false);
             else
                 throw new RefreshDistributedLockException("No fieldSelector found.");
-            
+
             if (lockRefreshed == false)
             {
                 LockedObjectId = default;
@@ -269,9 +273,9 @@ namespace SharpLock
                 LockedObjectId = default;
                 LockedObjectLockId = null;
             }
-            
+
             _logger.LogDebug("Lock release complete on {0} with {1}. Lock Acquired? {2}", _lockedObjectType.ToString(), _lockedObjectId.ToString(), LockAcquired);
-            
+
             if (LockAcquired && throwOnFailure)
                 throw new ReleaseDistributedLockException("Failed to release lock.");
 
@@ -297,7 +301,7 @@ namespace SharpLock
                 return await _store.GetLockedObjectAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectFieldSelector, cancellationToken).ConfigureAwait(false);
             if (_tLockableObjectArrayFieldSelector != null)
                 return await _store.GetLockedObjectAsync(BaseObjectId, LockedObjectId, LockedObjectLockId.Value, _tLockableObjectArrayFieldSelector, cancellationToken).ConfigureAwait(false);
-            
+
             throw new DistributedLockException("No fieldSelector found.");
         }
 
@@ -324,6 +328,11 @@ namespace SharpLock
             if (LockAcquired)
                 await ReleaseLockAsync().ConfigureAwait(false);
             Disposed = true;
+        }
+
+        public void Dispose()
+        {
+            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
 }
