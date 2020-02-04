@@ -28,9 +28,9 @@ jobs:
       - run: dotnet pack src/SharpLock/SharpLock.csproj -o nupkgs /p:Version=${NUGET_VERSION}
       - run: dotnet nuget push nupkgs/SharpLock.${NUGET_VERSION}.nupkg -k ${NUGET_API_KEY} -s https://api.nuget.org/v3/index.json
       - store_artifacts:
-        path: nupkgs
+          path: nupkgs
       - store_artifacts:
-        path: src/SharpLock/SharpLock/bin/Debug
+          path: src/SharpLock/SharpLock/bin/Debug
 
 workflows:
   version: 2
